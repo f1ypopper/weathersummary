@@ -51,12 +51,12 @@
             map.on("click", function (point) {
                 getData(point.latlng.lat, point.latlng.lng).then((data) => {
                     const average = (array) => array.reduce((a, b) => a + b) / array.length;
-                    const temp = average(data["temp-surface"]);
-                    const precip = average(data["past3hprecip-surface"]);
-                    const wind = average(data["wind_u-surface"]);
+                    const temp = (average(data["temp-surface"])-273).toFixed(2);
+                    const precip = (average(data["past3hprecip-surface"])*1000).toFixed(2);
+                    const wind = average(data["wind_u-surface"]).toFixed(2);
                     L.popup()
                         .setLatLng([point.latlng.lat, point.latlng.lng])
-                        .setContent(`🌡️TEMP: ${temp - 273} °C <br> 💧PRECIP: ${precip} mm <br> 🌪WIND: ${wind} m/s`)
+                        .setContent(`🌡️TEMP: ${temp} °C <br> 💧PRECIP: ${precip} mm <br> 🌪WIND: ${wind} m/s`)
                         .openOn(map);
                 })
 
