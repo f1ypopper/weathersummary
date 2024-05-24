@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src * self blob: data: gap:; style-src * self 'unsafe-inline' blob: data: gap:; script-src * 'self' 'unsafe-eval' 'unsafe-inline' blob: data: gap:; object-src * 'self' blob: data: gap:; img-src * self 'unsafe-inline' blob: data: gap:; connect-src self * 'unsafe-inline' blob: data: gap:; frame-src * self blob: data: gap:;">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+    <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
+    <style>
+        #windy {
+            width: 800px;
+            height: 600px;
+        }
+    </style>
+    <title>Weather Summary</title>
+</head>
+
+<body>
+    <div id="windy"></div>
+    <script>
+        async function getData(lat, lng) {
+            const response = await fetch("https://api.windy.com/api/point-forecast/v2", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    "lat": lat,
+                    "lon": lng,
+                    "model": "gfs",
+                    "parameters": ["temp", "precip", "wind"],
+                    "levels": ["surface"],
+                    "key": "key" //placeholder
+                })
+            });
+            return response.json();
+        }
+        const options = {
+            key: 'key', //placeholder
+
+            verbose: true,
+
+            lat: 50.4,
+            lon: 14.3,
+            zoom: 5,
+        };
+
+        windyInit(options, windyAPI => {
+
+            const { map } = windyAPI;
+            map.on("click", function (point) {
+                getData(point.latlng.lat, point.latlng.lng).then((data) => {
+                    const average = (array) => array.reduce((a, b) => a + b) / array.length;
+                    const temp = average(data["temp-surface"]);
+                    const precip = average(data["past3hprecip-surface"]);
+                    const wind = average(data["wind_u-surface"]);
+                    L.popup()
+                        .setLatLng([point.latlng.lat, point.latlng.lng])
+                        .setContent(`🌡️TEMP: ${temp - 273} °C <br> 💧PRECIP: ${precip} mm <br> 🌪WIND: ${wind} m/s`)
+                        .openOn(map);
+                })
+
+            })
+        });
+        getData(0, 0);
+    </script>
+</body>
+
+</html>
