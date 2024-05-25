@@ -4,4 +4,4 @@ A Desktop application made with Electron, OpenLayers 5 and Windy APIs that showc
 
 Support for progress bar on loading of map tiles and while zooming.
 
-![alt text](img/s1.png "Weather Summary on Linux")
+![alt text](img/weatehrsummary.gif "Weather Summary on Linux")
