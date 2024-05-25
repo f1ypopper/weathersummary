@@ -5,21 +5,128 @@
     <meta charset="UTF-8" />
     <meta http-equiv="Content-Security-Policy"
         content="default-src * self blob: data: gap:; style-src * self 'unsafe-inline' blob: data: gap:; script-src * 'self' 'unsafe-eval' 'unsafe-inline' blob: data: gap:; object-src * 'self' blob: data: gap:; img-src * self 'unsafe-inline' blob: data: gap:; connect-src self * 'unsafe-inline' blob: data: gap:; frame-src * self blob: data: gap:;">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
-    <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@v9.2.3/dist/ol.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.2.3/ol.css">
+
     <style>
         #windy {
             width: 800px;
             height: 600px;
+        }
+
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .ol-popup {
+            position: absolute;
+            background-color: white;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 12px;
+            left: -50px;
+            min-width: 280px;
+        }
+
+        .ol-popup:after,
+        .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 48px;
+            margin-left: -10px;
+        }
+
+        .ol-popup:before {
+            border-top-color: #cccccc;
+            border-width: 11px;
+            left: 48px;
+            margin-left: -11px;
+        }
+
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 2px;
+            right: 8px;
+        }
+
+        .ol-popup-closer:after {
+            content: "✖";
         }
     </style>
     <title>Weather Summary</title>
 </head>
 
 <body>
-    <div id="windy"></div>
+    <div id="map"></div>
+    <div id="popup" class="ol-popup">
+        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+        <div id="popup-content"></div>
+    </div>
     <script>
+        const container = document.getElementById('popup');
+        const content = document.getElementById('popup-content');
+        const closer = document.getElementById('popup-closer');
+        const overlay = new ol.Overlay({
+            element: container,
+            autoPan: {
+                animation: {
+                    duration: 250,
+                },
+            },
+        });
+        closer.onclick = function () {
+            overlay.setPosition(undefined);
+            closer.blur();
+            return false;
+        };
+        const map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM(),
+                }),
+            ],
+            overlays: [overlay],
+            view: new ol.View({
+                center: [0, 0],
+                zoom: 2,
+            }),
+        });
+        map.on("click", function (event) {
+            let cords = map.getCoordinateFromPixel(event.pixel);
+            console.log(event.coordinate);
+            const data = getData(cords[0], cords[1]).then((data) => {
+                const average = (array) => array.reduce((a, b) => a + b) / array.length;
+                const temp = (average(data["temp-surface"]) - 273).toFixed(2);
+                const precip = (average(data["past3hprecip-surface"]) * 1000).toFixed(2);
+                const wind = average(data["wind_u-surface"]).toFixed(2);
+                content.innerHTML = '<p>You clicked here:</p>' + `🌡️TEMP: ${temp} °C <br> 💧PRECIP: ${precip} mm <br> 🌪WIND: ${wind} m/s`;
+                overlay.setPosition(cords);
+                console.log(cords);
+            });
+        })
         async function getData(lat, lng) {
             const response = await fetch("https://api.windy.com/api/point-forecast/v2", {
                 method: "POST",
@@ -30,39 +137,11 @@
                     "model": "gfs",
                     "parameters": ["temp", "precip", "wind"],
                     "levels": ["surface"],
-                    "key": "key" //placeholder
+                    "key": "yFiocbu2PgXmJ1wTWOrDJpDAIaMhi8gX" //placeholder
                 })
             });
             return response.json();
         }
-        const options = {
-            key: 'key', //placeholder
-
-            verbose: true,
-
-            lat: 50.4,
-            lon: 14.3,
-            zoom: 5,
-        };
-
-        windyInit(options, windyAPI => {
-
-            const { map } = windyAPI;
-            map.on("click", function (point) {
-                getData(point.latlng.lat, point.latlng.lng).then((data) => {
-                    const average = (array) => array.reduce((a, b) => a + b) / array.length;
-                    const temp = (average(data["temp-surface"])-273).toFixed(2);
-                    const precip = (average(data["past3hprecip-surface"])*1000).toFixed(2);
-                    const wind = average(data["wind_u-surface"]).toFixed(2);
-                    L.popup()
-                        .setLatLng([point.latlng.lat, point.latlng.lng])
-                        .setContent(`🌡️TEMP: ${temp} °C <br> 💧PRECIP: ${precip} mm <br> 🌪WIND: ${wind} m/s`)
-                        .openOn(map);
-                })
-
-            })
-        });
-        getData(0, 0);
     </script>
 </body>
 
