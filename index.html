@@ -74,17 +74,64 @@
         .ol-popup-closer:after {
             content: "✖";
         }
+
+        .wrapper {
+            position: relative;
+            width: 800px;
+            height: 600px;
+        }
+
+        #progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 0;
+            box-shadow: 0px 0px 1px 10px rgb(255, 204, 0);
+            width: 0;
+            transition: width 250ms;
+        }
     </style>
     <title>Weather Summary</title>
 </head>
 
 <body>
-    <div id="map"></div>
-    <div id="popup" class="ol-popup">
-        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-        <div id="popup-content"></div>
+    <div class="wrapper">
+        <div id="map"></div>
+        <div id="progress"></div>
+        <div id="popup" class="ol-popup">
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+            <div id="popup-content"></div>
+        </div>
     </div>
     <script>
+        function Progress(el) {
+            this.el = el;
+            this.loading = 0;
+            this.loaded = 0;
+        }
+        Progress.prototype.addLoading = function () {
+            ++this.loading;
+            this.update();
+        };
+        Progress.prototype.addLoaded = function () {
+            ++this.loaded;
+            this.update();
+        };
+        Progress.prototype.update = function () {
+            const width = ((this.loaded / this.loading) * 100).toFixed(1) + '%';
+            this.el.style.width = width;
+        };
+        Progress.prototype.show = function () {
+            this.el.style.visibility = 'visible';
+        };
+        Progress.prototype.hide = function () {
+            const style = this.el.style;
+            setTimeout(function () {
+                style.visibility = 'hidden';
+                style.width = 0;
+            }, 250);
+        };
+        const progress = new Progress(document.getElementById('progress'));
         const container = document.getElementById('popup');
         const content = document.getElementById('popup-content');
         const closer = document.getElementById('popup-closer');
@@ -101,11 +148,18 @@
             closer.blur();
             return false;
         };
+        const source = new ol.source.OSM();
+        source.on('tileloadstart', function () {
+            progress.addLoading();
+        });
+        source.on(['tileloadend', 'tileloaderror'], function () {
+            progress.addLoaded();
+        });
         const map = new ol.Map({
             target: 'map',
             layers: [
                 new ol.layer.Tile({
-                    source: new ol.source.OSM(),
+                    source: source,
                 }),
             ],
             overlays: [overlay],
@@ -114,17 +168,21 @@
                 zoom: 2,
             }),
         });
+        map.on('loadstart', function () {
+            progress.show();
+        });
+        map.on('loadend', function () {
+            progress.hide();
+        });
         map.on("click", function (event) {
-            let cords = map.getCoordinateFromPixel(event.pixel);
-            console.log(event.coordinate);
-            const data = getData(cords[0], cords[1]).then((data) => {
+            let cords = ol.proj.toLonLat(map.getCoordinateFromPixel(event.pixel));
+            const data = getData(cords[1], cords[0]).then((data) => {
                 const average = (array) => array.reduce((a, b) => a + b) / array.length;
                 const temp = (average(data["temp-surface"]) - 273).toFixed(2);
                 const precip = (average(data["past3hprecip-surface"]) * 1000).toFixed(2);
                 const wind = average(data["wind_u-surface"]).toFixed(2);
-                content.innerHTML = '<p>You clicked here:</p>' + `🌡️TEMP: ${temp} °C <br> 💧PRECIP: ${precip} mm <br> 🌪WIND: ${wind} m/s`;
-                overlay.setPosition(cords);
-                console.log(cords);
+                content.innerHTML = `🌡️TEMP: ${temp} °C <br> 💧PRECIP: ${precip} mm <br> 🌪WIND: ${wind} m/s`;
+                overlay.setPosition(event.coordinate);
             });
         })
         async function getData(lat, lng) {
