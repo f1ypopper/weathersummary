@@ -30,13 +30,13 @@
                     "model": "gfs",
                     "parameters": ["temp", "precip", "wind"],
                     "levels": ["surface"],
-                    "key": "key" //placeholder
+                    "key": "yFiocbu2PgXmJ1wTWOrDJpDAIaMhi8gX" //placeholder
                 })
             });
             return response.json();
         }
         const options = {
-            key: 'key', //placeholder
+            key: 'uRctrQrQwsn9W1YPpmqteFHlKpa1jSc4', //placeholder
 
             verbose: true,
 
@@ -50,6 +50,7 @@
             const { map } = windyAPI;
             map.on("click", function (point) {
                 getData(point.latlng.lat, point.latlng.lng).then((data) => {
+                    console.log(point.latlng);
                     const average = (array) => array.reduce((a, b) => a + b) / array.length;
                     const temp = (average(data["temp-surface"])-273).toFixed(2);
                     const precip = (average(data["past3hprecip-surface"])*1000).toFixed(2);
