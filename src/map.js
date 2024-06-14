@@ -13,14 +13,28 @@ const db = window.db;
 const progress = new Progress(document.getElementById('progress'));
 const source = new OSM();
 let mediaRecorder;
+let chunks = [];
+let audioblob = new Blob([], { type: "audio/ogg; codecs=opus" });
+
+function handleRecordingStop(_) {
+    audioblob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+    chunks = [];
+}
+
 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     console.log("getUsrMedia supported.");
     navigator.mediaDevices.getUserMedia({ audio: true, },).then((stream) => {
         mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = (e) => {
+            chunks.push(e.data);
+        };
+        mediaRecorder.onstop = handleRecordingStop;
     }).catch((err) => {
+        audioblob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
         console.error(`The following getUserMedia error occurred: ${err}`);
     })
 } else {
+    audioblob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
     console.log("getUserMedia not supported on your browser");
 }
 source.on('tileloadstart', function () {
@@ -40,41 +54,41 @@ const popup = new Overlay({
 });
 
 class SymbolControl extends Control {
-  constructor(opt_options) {
-    const options = opt_options || {};
+    constructor(opt_options) {
+        const options = opt_options || {};
 
-    const button = document.createElement('button');
-    button.innerHTML = 'Symbols';
-    button.classList = ['btn', 'btn-secondary', 'dropdown-toggle'];
-    button.setAttribute('data-bs-toggle', "dropdown");
-    button.style.minWidth = 'fit-content';
-    const element = document.createElement('div');
-    element.className = 'symbol-control ol-unselectable ol-control';
-    let menu = document.createElement('ul');
-    menu.className = "dropdown-menu";
-    menu.style.width = 'fit-content';
-    menu.style.minWidth = 'fit-content';
-    let icons = ['marker', 'house', 'building', 'hotel'];
-    for (let icon of icons){
-        let item = document.createElement('li');
-        item.onclick = function(){changeIconName(icon)};
-        let img = document.createElement('img');
-        img.setAttribute('src', `img/${icon}.png`);
-        item.appendChild(img);
-        menu.appendChild(item);
+        const button = document.createElement('button');
+        button.innerHTML = 'Symbols';
+        button.classList = ['btn', 'btn-secondary', 'dropdown-toggle'];
+        button.setAttribute('data-bs-toggle', "dropdown");
+        button.style.minWidth = 'fit-content';
+        const element = document.createElement('div');
+        element.className = 'symbol-control ol-unselectable ol-control';
+        let menu = document.createElement('ul');
+        menu.className = "dropdown-menu";
+        menu.style.width = 'fit-content';
+        menu.style.minWidth = 'fit-content';
+        let icons = ['marker', 'house', 'building', 'hotel'];
+        for (let icon of icons) {
+            let item = document.createElement('li');
+            item.onclick = function () { changeIconName(icon) };
+            let img = document.createElement('img');
+            img.setAttribute('src', `img/${icon}.png`);
+            item.appendChild(img);
+            menu.appendChild(item);
+        }
+        element.appendChild(button);
+        element.appendChild(menu);
+        super({
+            element: element,
+            target: options.target,
+        });
+
     }
-    element.appendChild(button);
-    element.appendChild(menu);
-    super({
-      element: element,
-      target: options.target,
-    });
-
-  }
 }
 
-class AudioRecordControl extends Control{
-    constructor(opt_options){
+class AudioRecordControl extends Control {
+    constructor(opt_options) {
         const options = opt_options || {};
         let span = document.createElement('span');
         span.className = "fa-stack fa-1x";
@@ -101,18 +115,29 @@ class AudioRecordControl extends Control{
         span.addEventListener('click', this.handleRecord.bind(this), false);
     }
 
-    handleRecord(){
-        console.log("RECORDING STARTED");
-        if (!this.isRecording){
+    handleRecord() {
+        if (!this.isRecording) {
             this.mic.className = 'fas fa-pause fa-stack-1x';
             this.mic.style.color = 'white';
             this.circle.style.color = "Tomato";
             this.isRecording = true;
-        }else{
+            try {
+                mediaRecorder.start();
+            } catch {
+
+            }
+            console.log("RECORDING STARTED");
+        } else {
             this.mic.className = 'fas fa-microphone fa-stack-1x';
             this.mic.style.color = "#666666";
             this.circle.style.color = "white";
             this.isRecording = false;
+            try {
+                mediaRecorder.stop();
+            } catch {
+
+            }
+            console.log("RECORDING STOPPED");
         }
     }
 }
@@ -145,6 +170,7 @@ function createIcon(point) {
     const iconFeature = new Feature({
         geometry: new Point([point.x, point.y]),
         name: point.username,
+        audio: point.audio
     });
     iconFeature.setStyle(iconStyle);
     return iconFeature;
@@ -188,16 +214,17 @@ map.on('loadend', function () {
 });
 
 function createNewPoint(x, y, event) {
-    db.addPoint(username, x, y, iconName).then((_) => {
-        vectorSource.addFeature(createIcon({ username: username, x: x, y: y, icon: iconName }));
-        console.log(vectorLayer.source);
-        popup.setPosition(event.coordinate);
-        popover = new bootstrap.Popover(popOverElement, {
-            placement: 'top',
-            html: true,
-            content: 'HI',
+    audioblob.arrayBuffer().then((audiobuffer) => {
+        db.addPoint(username, x, y, iconName, audiobuffer).then((_) => {
+            vectorSource.addFeature(createIcon({ username: username, x: x, y: y, icon: iconName, audio: audiobuffer }));
+            popup.setPosition(event.coordinate);
+            popover = new bootstrap.Popover(popOverElement, {
+                placement: 'top',
+                html: true,
+                content: window.URL.createObjectURL(audioblob),
+            });
+            popover.show();
         });
-        popover.show();
     });
 }
 
@@ -212,10 +239,14 @@ map.on("click", function (event) {
         createNewPoint(event.coordinate[0], event.coordinate[1], event);
     } else {
         popup.setPosition(event.coordinate);
+        let audiobuf = feature.get('audio');
+        console.log(audiobuf);
+        let blob = new Blob([audiobuf], { type: "audio/ogg; codecs=opus" });
+        let audioUrl = window.URL.createObjectURL(blob);
         popover = new bootstrap.Popover(popOverElement, {
             placement: 'top',
             html: true,
-            content: "<img src='./img/mic.png'>",
+            content: `<audio controls><source src="${audioUrl}" type="audio/ogg"></audio>`,
         });
         popover.show();
     }

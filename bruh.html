@@ -1,0 +1,10 @@
+<html>
+    <body>
+        <script>
+            const blob = new Blob([3,34, 34, 123, 45, 2345, 45], {type: "audio/ogg; codecs=opus"});
+            console.log(blob.arrayBuffer().then((d)=>{console.log(d)}));
+            const audio = window.URL.createObjectURL(blob);
+            console.log(audio);
+        </script>
+    </body>
+</html>

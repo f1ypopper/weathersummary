@@ -34,6 +34,9 @@ sequelize.authenticate().then(() => {
       icon: {
         type: DataTypes.STRING,
         allowNull: false
+      },
+      audio: {
+        type: DataTypes.BLOB,
       }
     }
   )
@@ -45,8 +48,9 @@ async function getPoints() {
   return JSON.parse(JSON.stringify(points));
 }
 
-async function addPoint(username, x, y, icon) {
-  await GeoPoint.create({ userName: username, x: x, y: y, icon: icon });
+async function addPoint(username, x, y, icon, audioblob) {
+  let blob = new Blob(audioblob,  {type: "audio/ogg; codecs=opus"});
+  await GeoPoint.create({ userName: username, x: x, y: y, icon: icon, audio: blob });
   return {username: username, x: x, y: y, icon: icon};
 }
 
