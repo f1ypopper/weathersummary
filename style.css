@@ -63,7 +63,13 @@ body {
 .ol-popup-closer:after {
   content: "✖";
 }
-body { background: #333; color: white; font-family: 'Inter';}
+
+body {
+  background: #333;
+  color: white;
+  font-family: 'Inter';
+}
+
 .wrapper {
   position: relative;
   width: 100%;
@@ -78,4 +84,16 @@ body { background: #333; color: white; font-family: 'Inter';}
   box-shadow: 0px 0px 1px 10px rgb(255, 204, 0);
   width: 0;
   transition: width 250ms;
+}
+
+.symbol-control{
+  top: 65px;
+  left: .5em;
+  width: fit-content;
+}
+
+.audio-control{
+  top: 95px;
+  left: .5em;
+  width: fit-content;
 }
