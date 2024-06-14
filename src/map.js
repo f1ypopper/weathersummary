@@ -243,10 +243,14 @@ map.on("click", function (event) {
         console.log(audiobuf);
         let blob = new Blob([audiobuf], { type: "audio/ogg; codecs=opus" });
         let audioUrl = window.URL.createObjectURL(blob);
+        let audioPlayer = document.createElement('audio');
+        audioPlayer.style.width = '200px';
+        audioPlayer.setAttribute("controls", "");
+        audioPlayer.src = audioUrl;
         popover = new bootstrap.Popover(popOverElement, {
             placement: 'top',
             html: true,
-            content: `<audio controls><source src="${audioUrl}" type="audio/ogg"></audio>`,
+            content: audioPlayer,
         });
         popover.show();
     }
