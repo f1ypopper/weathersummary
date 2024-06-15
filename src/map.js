@@ -218,18 +218,19 @@ function createNewPoint(x, y, event) {
         db.addPoint(username, x, y, iconName, audiobuffer).then((_) => {
             vectorSource.addFeature(createIcon({ username: username, x: x, y: y, icon: iconName, audio: audiobuffer }));
             popup.setPosition(event.coordinate);
+            let audioUrl = window.URL.createObjectURL(audioblob);
+            let audioPlayer = document.createElement('audio');
+            audioPlayer.style.width = '200px';
+            audioPlayer.setAttribute("controls", "");
+            audioPlayer.src = audioUrl;
             popover = new bootstrap.Popover(popOverElement, {
                 placement: 'top',
                 html: true,
-                content: window.URL.createObjectURL(audioblob),
+                content: audioPlayer,
             });
             popover.show();
         });
     });
-}
-
-export function pointerDown(event) {
-    console.log("Pointer Down");
 }
 
 map.on("click", function (event) {
