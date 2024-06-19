@@ -6,7 +6,7 @@ import Tile from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
 import { Progress } from './progress';
 import { defaults as defaultControls } from 'ol/control';
-import { SymbolControl, AudioRecordControl } from './custom_controls';
+import { SymbolControl, AudioRecordControl } from './map_controls';
 let iconName = 'marker';
 let username = "test";
 const db = window.db;
