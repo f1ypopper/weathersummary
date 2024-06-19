@@ -1,7 +1,5 @@
 # Weather Summary
 
-A Desktop application made with Electron, OpenLayers 5 and Windy APIs that showcases the weather summary of a pinpointed location.
+A Desktop application made with Electron, OpenLayers 5.
 
 Support for progress bar on loading of map tiles and while zooming.
-
-![alt text](img/weathersummary.gif "Weather Summary on Linux")
