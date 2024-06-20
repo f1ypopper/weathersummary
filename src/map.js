@@ -6,7 +6,7 @@ import Tile from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
 import { Progress } from './progress';
 import { defaults as defaultControls } from 'ol/control';
-import { SymbolControl, AudioRecordControl } from './map_controls';
+import { SymbolControl, AudioRecordControl, NotificationControl } from './map_controls';
 let iconName = 'marker';
 let username = "test";
 const db = window.db;
@@ -54,7 +54,7 @@ const popup = new Overlay({
 });
 
 const map = new Map({
-    controls: defaultControls().extend([new SymbolControl(changeIconName), new AudioRecordControl(mediaRecorder)]),
+    controls: defaultControls().extend([new SymbolControl(changeIconName), new AudioRecordControl(mediaRecorder), new NotificationControl()]),
     target: 'map',
     layers: [
         new Tile({
@@ -152,7 +152,6 @@ map.on("click", function (event) {
     } else {
         popup.setPosition(event.coordinate);
         let audiobuf = feature.get('audio');
-        console.log(audiobuf);
         let blob = new Blob([audiobuf], { type: "audio/ogg; codecs=opus" });
         let audioUrl = window.URL.createObjectURL(blob);
         let audioPlayer = document.createElement('audio');

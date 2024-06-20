@@ -87,3 +87,43 @@ export class AudioRecordControl extends Control {
         }
     }
 }
+
+export class NotificationControl extends Control {
+    constructor(opt_options) {
+        const options = opt_options || {};
+        const button = document.createElement('button');
+        button.innerHTML = 'Notify';
+        button.style.minWidth = 'fit-content';
+        let collapse = document.createElement('div');
+        collapse.className = 'collapse';
+        collapse.id = 'messagebox';
+        let message = document.createElement('input');
+        collapse.appendChild(message);
+        const element = document.createElement('div');
+        element.className = 'notify ol-unselectable ol-control';
+        element.style.minWidth = 'fit-content';
+        element.appendChild(button);
+        element.appendChild(collapse);
+        super({
+            element: element,
+            target: options.target
+        })
+        this.collapse = collapse;
+        this.isOpen = false;
+        this.message = message;
+        button.addEventListener('click', this.showMessageBox.bind(this), false);
+    }
+    showMessageBox() {
+        if (this.isOpen) {
+            this.collapse.className = 'collapse';
+            if (this.message.value != "") {
+                window.notify.showNotification("Map Notification", this.message.value);
+            }
+        } else {
+            this.collapse.className = 'collapse.show';
+        }
+        this.isOpen = !this.isOpen;
+
+    }
+}
+
