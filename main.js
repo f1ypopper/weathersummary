@@ -16,8 +16,8 @@ const createWindow = () => {
 function createNotification(title, body){
   new Notification({title: title, body: body}).show();
 }
-app.setAppUserModelId(process.execPath);
 app.whenReady().then(() => {
+  app.setAppUserModelId(process.execPath);
   ipcMain.handle('getPoints', async () => { return await getPoints() })
   ipcMain.handle('addPoint', async (_, username, x, y, icon) => { await addPoint(username, x, y, icon) })
   ipcMain.handle('showNotification', async (_, title, body) => { createNotification(title, body)})
