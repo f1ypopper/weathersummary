@@ -58,35 +58,36 @@ export class AudioRecordControl extends Control {
         this.circle = circle;
         this.isRecording = false;
         this.mediaRecorder = mediaRecorder;
-        span.addEventListener('click', this.handleRecord.bind(this), false);
+        span.addEventListener('mousedown', this.handleRecord.bind(this), false);
+        span.addEventListener('mouseup', this.handleStop.bind(this), false);
     }
 
     handleRecord() {
-        if (!this.isRecording) {
-            this.mic.className = 'fas fa-pause fa-stack-1x';
-            this.mic.style.color = 'white';
-            this.circle.style.color = "Tomato";
-            this.isRecording = true;
-            try {
-                this.mediaRecorder.start();
-            } catch {
+        //this.mic.className = 'fas fa-pause fa-stack-1x';
+        this.mic.style.color = 'white';
+        this.circle.style.color = "Tomato";
+        try {
+            this.mediaRecorder.start();
+        } catch {
 
-            }
-            console.log("RECORDING STARTED");
-        } else {
-            this.mic.className = 'fas fa-microphone fa-stack-1x';
-            this.mic.style.color = "#666666";
-            this.circle.style.color = "white";
-            this.isRecording = false;
-            try {
-                this.mediaRecorder.stop();
-            } catch {
-
-            }
-            console.log("RECORDING STOPPED");
         }
+        console.log("RECORDING STARTED");
+
+    }
+
+    handleStop() {
+        //this.mic.className = 'fas fa-microphone fa-stack-1x';
+        this.mic.style.color = "#666666";
+        this.circle.style.color = "white";
+        try {
+            this.mediaRecorder.stop();
+        } catch {
+
+        }
+        console.log("RECORDING STOPPED");
     }
 }
+
 
 export class NotificationControl extends Control {
     constructor(opt_options) {

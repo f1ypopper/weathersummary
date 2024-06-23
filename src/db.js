@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = new Sequelize('postgres://postgres:newpass1@localhost:5432/mappy')
+const sequelize = new Sequelize('postgres://postgres:newpass1@localhost:5432/mappy',{logging: false})
 let GeoPoint;
 sequelize.authenticate().then(() => {
     GeoPoint = sequelize.define(
