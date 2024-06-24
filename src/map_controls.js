@@ -128,3 +128,36 @@ export class NotificationControl extends Control {
     }
 }
 
+export class DirectionControl extends Control {
+    constructor(toggleMode, initialMode) {
+        const button = document.createElement('button');
+        if(initialMode){
+            button.innerHTML = 'Directions';
+        }else{
+            button.innerHTML = 'Marker';
+        }
+        button.style.minWidth = 'fit-content';
+        const element = document.createElement('div');
+        element.className = 'directions ol-unselectable ol-control';
+        element.style.minWidth = 'fit-content';
+        element.appendChild(button);
+        super({
+            element: element,
+            target: undefined,
+        });
+        button.addEventListener('click', this.handleToggle.bind(this));
+        this.toggleMode = toggleMode;
+        this.button = button;
+        this.isDirectionMode= initialMode;
+    }
+
+    handleToggle() {
+        this.isDirectionMode = !this.isDirectionMode;
+        if(this.isDirectionMode){
+            this.button.innerHTML = 'Directions';
+        }else{
+            this.button.innerHTML = 'Marker';
+        }
+        this.toggleMode(this.isDirectionMode);
+    }
+}

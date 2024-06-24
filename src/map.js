@@ -2,14 +2,14 @@ import { View, Map } from 'ol';
 import OSM from 'ol/source/OSM';
 import Tile from 'ol/layer/Tile';
 import { Progress } from './progress';
-import {NotificationControl} from './map_controls';
+import {NotificationControl, DirectionControl} from './map_controls';
 import { initIconMode, handleIconMode } from './icon';
 import { initDirectionMode, handleDirectionMode } from './route';
 import {defaults as defaultControls} from 'ol/control';
 
 const progress = new Progress(document.getElementById('progress'));
 const source = new OSM();
-let directionMode = true;
+let directionMode = false;
 
 source.on('tileloadstart', function () {
     progress.addLoading();
@@ -18,9 +18,13 @@ source.on(['tileloadend', 'tileloaderror'], function () {
     progress.addLoaded();
 });
 
+function toggleMode(mode){
+    directionMode = mode;
+}
+
 const map = new Map({
     target: 'map',
-    controls: defaultControls().extend([new NotificationControl()]),
+    controls: defaultControls().extend([new NotificationControl(), new DirectionControl(toggleMode, directionMode)]),
     layers: [
         new Tile({
             source: source,
