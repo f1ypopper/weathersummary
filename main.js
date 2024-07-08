@@ -1,5 +1,5 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
-const { Sequelize, DataTypes } = require('sequelize');
+const { app, BrowserWindow, ipcMain, Notification } = require('electron')
+const { addPoint, getPoints } = require('./src/db')
 const path = require('node:path');
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -13,49 +13,13 @@ const createWindow = () => {
   win.loadFile('index.html')
 }
 
-const sequelize = new Sequelize('postgres://postgres:newpass1@localhost:5432/mappy')
-let GeoPoint;
-sequelize.authenticate().then(() => {
-  GeoPoint = sequelize.define(
-    'GeoPoint',
-    {
-      userName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      x: {
-        type: DataTypes.DOUBLE,
-        allowNull: false
-      },
-      y: {
-        type: DataTypes.DOUBLE,
-        allowNull: false
-      },
-      icon: {
-        type: DataTypes.STRING,
-        allowNull: false
-      },
-      audio: {
-        type: DataTypes.BLOB,
-      }
-    }
-  )
-  GeoPoint.sync().then(() => {
-  });
-});
-async function getPoints() {
-  const points = await GeoPoint.findAll();
-  return JSON.parse(JSON.stringify(points));
+function createNotification(title, body){
+  new Notification({title: title, body: body}).show();
 }
-
-async function addPoint(username, x, y, icon, audioblob) {
-  let blob = new Blob(audioblob,  {type: "audio/ogg; codecs=opus"});
-  await GeoPoint.create({ userName: username, x: x, y: y, icon: icon, audio: blob });
-  return {username: username, x: x, y: y, icon: icon};
-}
-
 app.whenReady().then(() => {
+  app.setAppUserModelId(process.execPath);
   ipcMain.handle('getPoints', async () => { return await getPoints() })
-  ipcMain.handle('addPoint', async (_,username, x, y, icon) => { await addPoint(username, x, y, icon) })
+  ipcMain.handle('addPoint', async (_, username, x, y, icon) => { await addPoint(username, x, y, icon) })
+  ipcMain.handle('showNotification', async (_, title, body) => { createNotification(title, body)})
   createWindow()
 })

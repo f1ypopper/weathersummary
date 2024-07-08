@@ -10,3 +10,6 @@ contextBridge.exposeInMainWorld('db', {
   getPoints: ()=>ipcRenderer.invoke('getPoints'),
   addPoint: (...args)=>ipcRenderer.invoke('addPoint',...args)
 })
+contextBridge.exposeInMainWorld('notify', {
+  showNotification: (...args)=>ipcRenderer.invoke('showNotification',...args)
+})

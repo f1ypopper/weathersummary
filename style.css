@@ -97,3 +97,15 @@ body {
   left: .5em;
   width: fit-content;
 }
+
+.notify{
+  top: 135px;
+  left: .5em;
+  width: fit-content;
+}
+
+.directions{
+  top: 160px;
+  left: .5em;
+  width: fit-content;
+}
