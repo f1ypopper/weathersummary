@@ -47,24 +47,7 @@ function createIcon(point) {
     iconFeature.setStyle(iconStyle);
     return iconFeature;
 }
-db.getPoints().then((points) => {
-    let features = [];
-    points.forEach((point) => {
-        const iconFeature = createIcon(point);
-        features.push(
-            iconFeature
-        );
-    })
 
-    vectorSource = new VectorSource({
-        features: features,
-    });
-
-    vectorLayer = new VectorLayer({
-        source: vectorSource,
-    });
-    map.addLayer(vectorLayer);
-});
 
 function createNewPoint(x, y, event) {
     audioblob.arrayBuffer().then((audiobuffer) => {
@@ -116,6 +99,24 @@ export function initIconMode(m) {
     map.addControl(new AudioRecordControl(mediaRecorder));
     map.addControl(new SymbolControl(changeIconName));
     map.on('movestart', disposePopover);
+    db.getPoints().then((points) => {
+        let features = [];
+        points.forEach((point) => {
+            const iconFeature = createIcon(point);
+            features.push(
+                iconFeature
+            );
+        })
+
+        vectorSource = new VectorSource({
+            features: features,
+        });
+
+        vectorLayer = new VectorLayer({
+            source: vectorSource,
+        });
+        map.addLayer(vectorLayer);
+    });
 }
 
 function handleRecordingStop(_) {
