@@ -148,16 +148,16 @@ export class DirectionControl extends Control {
         button.addEventListener('click', this.handleToggle.bind(this));
         this.toggleMode = toggleMode;
         this.button = button;
-        this.isDirectionMode= initialMode;
+        this.ismapMode= initialMode;
     }
 
     handleToggle() {
-        this.isDirectionMode = !this.isDirectionMode;
-        if(this.isDirectionMode){
+        this.ismapMode = !this.ismapMode;
+        if(this.ismapMode){
             this.button.innerHTML = 'Directions';
         }else{
             this.button.innerHTML = 'Marker';
         }
-        this.toggleMode(this.isDirectionMode);
+        this.toggleMode(this.ismapMode);
     }
 }

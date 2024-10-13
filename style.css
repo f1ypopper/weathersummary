@@ -10,11 +10,19 @@ body {
   bottom: 0;
   width: 100%;
 }
-
+.mapcontrols{
+  z-index: 9999;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
 #controls {
   margin-top: 10px;
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-start;
+  align-items: center;
+  height: 13%;
+  padding-left: 2%;
 }
 
 .ol-popup {
@@ -66,7 +74,7 @@ body {
 }
 
 body {
-  background: #333;
+  background: black;
   color: white;
   font-family: 'Inter';
 }
@@ -74,7 +82,7 @@ body {
 .wrapper {
   position: relative;
   width: 100%;
-  height: 90%;
+  height: 85%;
 }
 
 #progress {

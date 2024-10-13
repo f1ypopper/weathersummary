@@ -138,7 +138,7 @@ function drawRoute(polyline) {
     startAnimation();
 }
 
-export async function handleDirectionMode(event) {
+export async function handlemapMode(event) {
     const coordinate = event.coordinate;
     if (startPoint == null) {
         startPoint = addPoint(coordinate, "white");
@@ -194,7 +194,7 @@ function addPoint(coordinates, color) {
 }
 
 
-export function initDirectionMode(m) {
+export function initRouteMode(m) {
     map = m;
     orsDirections = new Openrouteservice.Directions({ api_key: "5b3ce3597851110001cf624850a09fa01da2494b825165c544441b76" });
     map.addLayer(routeLayer);

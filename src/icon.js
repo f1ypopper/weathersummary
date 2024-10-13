@@ -7,7 +7,7 @@ import { AudioRecordControl, NotificationControl, SymbolControl } from './map_co
 
 const db = window.db;
 let username = "test";
-let iconName = 'marker';
+let iconName = null;
 let popover;
 let vectorSource = null;
 let vectorLayer = null;
@@ -27,8 +27,10 @@ function disposePopover() {
         popover = undefined;
     }
 }
-function changeIconName(name) {
+function setIconName(name) {
     iconName = name;
+    const currentIcon = document.getElementById("icon-current");
+    currentIcon.setAttribute("src", `img/${iconName}.png`)
 }
 function createIcon(point) {
     const iconStyle = new Style({
@@ -113,8 +115,15 @@ export function initIconMode(m) {
     map = m;
     map.addOverlay(popup);
     setupAudio();
-    map.addControl(new AudioRecordControl(mediaRecorder));
-    map.addControl(new SymbolControl(changeIconName));
+    const markerList = ["marker", "house", "building", "hotel"];
+    const iconListElem = document.getElementById("icon-list");
+    for(const marker of markerList){
+        const iconElem = document.createElement("img");
+        iconElem.setAttribute("src", `img/${marker}.png`);
+        iconElem.addEventListener("click", ()=>setIconName(marker));
+        iconListElem.appendChild(iconElem);
+    }
+    setIconName("marker");
     map.on('movestart', disposePopover);
 }
 
